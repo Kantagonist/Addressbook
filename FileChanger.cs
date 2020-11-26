@@ -21,37 +21,24 @@ namespace Addressbook
         /// </summary>
         private void onLoad()
         {
-            //reads in all the data in  the csv file
+            //creates a new file if necessary
             if (!File.Exists("addressbook.csv"))
             {
                 File.Create(Path);
                 return;
             }
-            TextFieldParser parser = new TextFieldParser(Path);
-            parser.TextFieldType = FieldType.Delimited;
-            parser.SetDelimiters(",");
-            string[] dataSnippets = parser.ReadFields();
-            List<string> tempEntry = new List<string>();
 
-            //prepares the raw data into Lists
-            if (dataSnippets == null) return;
-            foreach (string snippet in dataSnippets)
+            //reads its data
+            TextFieldParser parser = new TextFieldParser(Path);
+            List<string> lines = new List<string>();
+            while (!parser.EndOfData)
             {
-                //the "New" keyword marks a new entry
-                if (snippet == "New")
-                {
-                    if (tempEntry.Count != 0)
-                    {
-                        addressList.Add(tempEntry);
-                    }
-                    tempEntry = new List<string>();
-                }
-                else
-                {
-                    tempEntry.Add(snippet);
-                }
+                lines.Add(parser.ReadLine());
             }
-            addressList.Add(tempEntry);
+            foreach(string line in lines)
+            {
+                addressList.Add(new List<string>(line.Split(",")));
+            }
         }
 
         /// <summary>
@@ -142,13 +129,13 @@ namespace Addressbook
             string text = "";
             foreach (List<string> address in addressList)
             {
-                text += "New, ";
                 foreach (string entry in address)
                 {
                     text += entry + ", ";
                 }
+                text += "\n";
             }
-            text = text.Substring(0, text.Length - 2);
+            text = text.Substring(0, text.Length - 3);
             System.IO.File.WriteAllText(Path, text);
         }
     }
